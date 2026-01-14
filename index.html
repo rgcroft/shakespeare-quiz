@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shakespeare's Word Forge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #2c1810 0%, #1a0f0a 100%);
+            color: #f4e8d8;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid #d4af37;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #d4af37;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-style: italic;
+            color: #c9a961;
+            font-size: 1.1em;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(212, 175, 55, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #d4af37;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 0.9em;
+            color: #c9a961;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #d4af37;
+        }
+
+        .word-display {
+            text-align: center;
+            padding: 40px;
+            background: rgba(212, 175, 55, 0.05);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #d4af37;
+        }
+
+        .current-word {
+            font-size: 3em;
+            font-weight: bold;
+            color: #d4af37;
+            text-transform: lowercase;
+            letter-spacing: 2px;
+        }
+
+        .word-counter {
+            margin-top: 15px;
+            color: #c9a961;
+            font-style: italic;
+        }
+
+        .category-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .category-btn {
+            padding: 30px;
+            font-size: 1.3em;
+            font-weight: bold;
+            border: 3px solid #d4af37;
+            background: rgba(212, 175, 55, 0.1);
+            color: #f4e8d8;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Georgia', serif;
+        }
+
+        .category-btn:hover {
+            background: rgba(212, 175, 55, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .category-btn:active {
+            transform: translateY(0);
+        }
+
+        .feedback {
+            min-height: 200px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid transparent;
+            display: none;
+        }
+
+        .feedback.correct {
+            border-left-color: #4a9d5f;
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        .feedback.incorrect {
+            border-left-color: #c44536;
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .feedback-title {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .feedback.correct .feedback-title {
+            color: #6dd58c;
+        }
+
+        .feedback.incorrect .feedback-title {
+            color: #e67d6f;
+        }
+
+        .shakespeare-quote {
+            font-style: italic;
+            font-size: 1.2em;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 3px solid #d4af37;
+        }
+
+        .etymology, .first-use {
+            margin-top: 15px;
+            line-height: 1.6;
+        }
+
+        .etymology strong, .first-use strong {
+            color: #d4af37;
+        }
+
+        .next-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background: #d4af37;
+            color: #1a0f0a;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Georgia', serif;
+            display: none;
+            margin-top: 20px;
+        }
+
+        .next-btn:hover {
+            background: #e8c14d;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5);
+        }
+
+        .quiz-page {
+            display: block;
+        }
+
+        .info-page {
+            display: none;
+        }
+
+        .page-container {
+            min-height: 400px;
+        }
+
+        .final-results {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            background: rgba(212, 175, 55, 0.1);
+            border-radius: 15px;
+            border: 2px solid #d4af37;
+        }
+
+        .final-results h2 {
+            font-size: 2.5em;
+            color: #d4af37;
+            margin-bottom: 20px;
+        }
+
+        .final-score {
+            font-size: 3em;
+            font-weight: bold;
+            color: #6dd58c;
+            margin: 20px 0;
+        }
+
+        .restart-btn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            background: #d4af37;
+            color: #1a0f0a;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Georgia', serif;
+        }
+
+        .restart-btn:hover {
+            background: #e8c14d;
+        }
+
+        .flash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .flash-overlay.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .flash-content {
+            text-align: center;
+            padding: 60px;
+            max-width: 800px;
+        }
+
+        .flash-content.correct {
+            animation: bounceIn 0.6s ease;
+        }
+
+        .flash-content.incorrect {
+            animation: shakeIn 0.6s ease;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shakeIn {
+            0% { transform: translateX(-100px); opacity: 0; }
+            25% { transform: translateX(50px); }
+            50% { transform: translateX(-30px); }
+            75% { transform: translateX(15px); }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        .flash-result {
+            font-size: 4em;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .flash-content.correct .flash-result {
+            color: #6dd58c;
+        }
+
+        .flash-content.incorrect .flash-result {
+            color: #e67d6f;
+        }
+
+        .flash-quote {
+            font-size: 2.5em;
+            font-style: italic;
+            color: #d4af37;
+            line-height: 1.4;
+            font-family: 'Georgia', serif;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="flash-overlay" id="flash-overlay">
+        <div class="flash-content" id="flash-content">
+            <div class="flash-result" id="flash-result"></div>
+            <div class="flash-quote" id="flash-quote"></div>
+        </div>
+    </div>
+    <div class="container">
+        <header>
+            <h1>⚔️ Shakespeare's Word Forge ⚔️</h1>
+            <p class="subtitle">"To coin or not to coin, that is the question"</p>
+            <p class="subtitle" style="font-size: 0.9em; margin-top: 5px;">78 words in the bank • 10 questions per round</p>
+        </header>
+
+        <div class="score-board">
+            <div class="score-item">
+                <div class="score-label">Correct</div>
+                <div class="score-value" id="correct-score">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Incorrect</div>
+                <div class="score-value" id="incorrect-score">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Progress</div>
+                <div class="score-value" id="progress-score">0/10</div>
+            </div>
+        </div>
+
+        <div id="quiz-area">
+            <!-- Question Page -->
+            <div class="quiz-page page-container" id="quiz-page">
+                <div class="word-display">
+                    <div class="current-word" id="current-word">Loading...</div>
+                    <div class="word-counter" id="word-counter">Word 1 of 10</div>
+                </div>
+
+                <div class="category-buttons">
+                    <button class="category-btn" onclick="checkAnswer(true)">
+                        ✨ Shakespeare Coined It
+                    </button>
+                    <button class="category-btn" onclick="checkAnswer(false)">
+                        ❌ Not Shakespeare
+                    </button>
+                </div>
+            </div>
+
+            <!-- Information Page -->
+            <div class="info-page page-container" id="info-page">
+                <div class="feedback" id="feedback"></div>
+                
+                <button class="next-btn" id="next-btn" onclick="goToNextWord()">
+                    Next Word →
+                </button>
+            </div>
+        </div>
+
+        <div class="final-results" id="final-results">
+            <h2>🎭 The Play Concludes! 🎭</h2>
+            <div class="final-score" id="final-score"></div>
+            <p id="final-message"></p>
+            <button class="restart-btn" onclick="continueQuiz()" style="background: #6dd58c; margin-right: 10px;">Continue with More Words</button>
+            <button class="restart-btn" onclick="restartQuiz()">Start Fresh</button>
+        </div>
+    </div>
+
+    <script>
+        const words = [
+            // Shakespeare coined these
+            {
+                word: "bedazzled",
+                shakespeare: true,
+                firstUse: "The Taming of the Shrew (1590-1592)",
+                meaning: "To greatly impress or astonish with brilliance; to confuse or bewilder with dazzling light or displays.",
+                etymology: "Shakespeare combined 'be-' (intensifying prefix) with 'dazzle' to create this word meaning to be overwhelmed by brilliance."
+            },
+            {
+                word: "swagger",
+                shakespeare: true,
+                firstUse: "A Midsummer Night's Dream (1595-1596)",
+                meaning: "To walk or behave in a very confident and arrogant or self-important way.",
+                etymology: "Shakespeare created this word, possibly from 'swag' meaning to sway, to describe boastful behavior."
+            },
+            {
+                word: "eyeball",
+                shakespeare: true,
+                firstUse: "The Tempest (1610-1611)",
+                meaning: "The round part of the eye within the socket and eyelids; the globe of the eye.",
+                etymology: "Shakespeare coined this compound word by combining 'eye' + 'ball' to describe the spherical organ of sight."
+            },
+            {
+                word: "fashionable",
+                shakespeare: true,
+                firstUse: "Troilus and Cressida (1602)",
+                meaning: "Characteristic of or influenced by current popular trends or styles.",
+                etymology: "Shakespeare added the suffix '-able' to 'fashion' to create this adjective describing things in style."
+            },
+            {
+                word: "lonely",
+                shakespeare: true,
+                firstUse: "Coriolanus (1608)",
+                meaning: "Sad because one has no friends or company; isolated or solitary.",
+                etymology: "Shakespeare created 'lonely' by adding '-ly' to 'lone,' giving English a new way to express solitude."
+            },
+            {
+                word: "assassination",
+                shakespeare: true,
+                firstUse: "Macbeth (1606)",
+                meaning: "The act of deliberately killing a prominent person, typically for political or religious motives.",
+                etymology: "Shakespeare derived this from the medieval Latin 'assassinare,' introducing it into English in its modern form."
+            },
+            {
+                word: "generous",
+                shakespeare: true,
+                firstUse: "Hamlet (1600-1601)",
+                meaning: "Showing a readiness to give more of something than is necessary or expected; magnanimous.",
+                etymology: "Shakespeare adapted this from the Latin 'generosus' (noble, of noble birth) and gave it the modern meaning of liberality in giving."
+            },
+            {
+                word: "gloomy",
+                shakespeare: true,
+                firstUse: "Titus Andronicus (1594)",
+                meaning: "Dark or poorly lit; causing feelings of sadness or depression.",
+                etymology: "Shakespeare created this adjective from 'gloom,' which existed as a verb, to describe darkness and melancholy."
+            },
+            {
+                word: "majestic",
+                shakespeare: true,
+                firstUse: "Julius Caesar (1599)",
+                meaning: "Having or showing impressive beauty, scale, or dignity; stately and dignified.",
+                etymology: "Shakespeare formed this adjective from 'majesty,' giving English a word to describe kingly grandeur."
+            },
+            {
+                word: "radiance",
+                shakespeare: true,
+                firstUse: "All's Well That Ends Well (1604-1605)",
+                meaning: "Light or heat as emitted or reflected; great happiness apparent in someone's expression or bearing.",
+                etymology: "Shakespeare created this noun from the Latin 'radiare' (to shine), introducing the concept of brilliant light into English."
+            },
+            {
+                word: "addiction",
+                shakespeare: true,
+                firstUse: "Henry V (1599)",
+                meaning: "The state of being compulsively committed to a habit or practice or to something that is psychologically or physically habit-forming.",
+                etymology: "Shakespeare used 'addiction' from Latin 'addictio' (a delivering up, surrender), giving it the meaning of being enslaved to a habit."
+            },
+            {
+                word: "amazement",
+                shakespeare: true,
+                firstUse: "The Tempest (1610-1611)",
+                meaning: "A feeling of great surprise or wonder; overwhelming astonishment.",
+                etymology: "Shakespeare formed this noun from 'amaze,' creating a word to capture profound wonder and bewilderment."
+            },
+            {
+                word: "barefaced",
+                shakespeare: true,
+                firstUse: "A Midsummer Night's Dream (1595-1596)",
+                meaning: "Shameless and undisguised; bold and unrestrained.",
+                etymology: "Shakespeare combined 'bare' + 'faced' to mean openly bold, originally referring to an unmasked face."
+            },
+            {
+                word: "bedroom",
+                shakespeare: true,
+                firstUse: "A Midsummer Night's Dream (1595-1596)",
+                meaning: "A room furnished with a bed and used primarily for sleeping.",
+                etymology: "Shakespeare created this simple compound word by joining 'bed' + 'room' to describe a sleeping chamber."
+            },
+            {
+                word: "belongings",
+                shakespeare: true,
+                firstUse: "The Taming of the Shrew (1590-1592)",
+                meaning: "One's movable possessions; personal property.",
+                etymology: "Shakespeare formed this noun from 'belong,' creating a word for personal possessions and property."
+            },
+            {
+                word: "bloodstained",
+                shakespeare: true,
+                firstUse: "Richard III (1592-1593)",
+                meaning: "Marked or covered with blood; tainted by bloodshed or violence.",
+                etymology: "Shakespeare combined 'blood' + 'stained' to create this vivid descriptor of violence and guilt."
+            },
+            {
+                word: "blushing",
+                shakespeare: true,
+                firstUse: "Venus and Adonis (1593)",
+                meaning: "Showing shyness, embarrassment, or shame by becoming red in the face.",
+                etymology: "Shakespeare created this adjective form from the verb 'blush,' giving it wider application to describe modesty."
+            },
+            {
+                word: "bump",
+                shakespeare: true,
+                firstUse: "Romeo and Juliet (1594-1596)",
+                meaning: "A light blow or collision; a swelling or protuberance on a surface.",
+                etymology: "Shakespeare coined this word, likely from imitative origins, to describe the sound and action of impact."
+            },
+            {
+                word: "castigate",
+                shakespeare: true,
+                firstUse: "Measure for Measure (1604)",
+                meaning: "To reprimand severely; to punish or criticize harshly.",
+                etymology: "Shakespeare introduced this from Latin 'castigare' (to correct, punish), using it to mean severe reproof."
+            },
+            {
+                word: "circumstantial",
+                shakespeare: true,
+                firstUse: "As You Like It (1599-1600)",
+                meaning: "Pointing indirectly toward someone's guilt but not conclusively proving it; depending on circumstances.",
+                etymology: "Shakespeare formed this adjective from 'circumstance,' creating a legal and descriptive term still used today."
+            },
+            {
+                word: "cold-blooded",
+                shakespeare: true,
+                firstUse: "King John (1596)",
+                meaning: "Without emotion or pity; deliberately cruel or callous.",
+                etymology: "Shakespeare combined 'cold' + 'blooded' to describe someone lacking warmth, passion, or mercy."
+            },
+            {
+                word: "courtship",
+                shakespeare: true,
+                firstUse: "The Merchant of Venice (1596-1597)",
+                meaning: "The period during which a couple develop a romantic relationship before getting married.",
+                etymology: "Shakespeare created this noun from 'court' (to woo), describing the process of romantic pursuit."
+            },
+            {
+                word: "critic",
+                shakespeare: true,
+                firstUse: "Love's Labour's Lost (1594-1595)",
+                meaning: "A person who judges the merits of literary or artistic works; one who expresses unfavorable opinions.",
+                etymology: "Shakespeare adapted 'critic' from Greek 'kritikos' (able to judge), introducing it as a noun for reviewers."
+            },
+            {
+                word: "dawning",
+                shakespeare: true,
+                firstUse: "Henry V (1599)",
+                meaning: "The beginning or first appearance of something; daybreak.",
+                etymology: "Shakespeare formed this noun from 'dawn,' extending its meaning to any beginning or emergence."
+            },
+            {
+                word: "defeat",
+                shakespeare: true,
+                firstUse: "Henry VI Part 3 (1591)",
+                meaning: "To win a victory over; to overcome or frustrate.",
+                etymology: "Shakespeare used 'defeat' from Old French 'desfaire' (to undo), establishing it as a noun for loss in battle."
+            },
+            {
+                word: "dishearten",
+                shakespeare: true,
+                firstUse: "Henry V (1599)",
+                meaning: "To cause someone to lose determination or confidence; to discourage.",
+                etymology: "Shakespeare added 'dis-' to 'hearten,' creating a word meaning to drain someone of courage or hope."
+            },
+            {
+                word: "dwindle",
+                shakespeare: true,
+                firstUse: "Henry IV Part 1 (1597)",
+                meaning: "To diminish gradually in size, amount, or strength; to shrink or waste away.",
+                etymology: "Shakespeare coined this word, possibly from 'dwine' (to waste away), to describe gradual diminishment."
+            },
+            {
+                word: "elbow",
+                shakespeare: true,
+                firstUse: "King Lear (1605-1606)",
+                meaning: "To push or strike with the elbow; to make one's way by pushing.",
+                etymology: "Shakespeare turned the noun 'elbow' into a verb, meaning to jostle or push one's way through."
+            },
+            {
+                word: "excellent",
+                shakespeare: true,
+                firstUse: "Othello (1603-1604)",
+                meaning: "Extremely good; outstanding or exceptional in quality.",
+                etymology: "Shakespeare popularized 'excellent' from Latin 'excellere' (to surpass), making it common in praising quality."
+            },
+            {
+                word: "excitement",
+                shakespeare: true,
+                firstUse: "Hamlet (1600-1601)",
+                meaning: "A feeling of great enthusiasm and eagerness; the state of being emotionally aroused.",
+                etymology: "Shakespeare formed this noun from 'excite,' capturing the sensation of heightened emotional energy."
+            },
+            {
+                word: "exposure",
+                shakespeare: true,
+                firstUse: "Troilus and Cressida (1602)",
+                meaning: "The state of being exposed to harm or danger; the revelation of something secret.",
+                etymology: "Shakespeare created this noun from 'expose,' giving English a word for vulnerability and revelation."
+            },
+            {
+                word: "fitful",
+                shakespeare: true,
+                firstUse: "Macbeth (1606)",
+                meaning: "Occurring in irregular bursts; restless or disturbed.",
+                etymology: "Shakespeare added '-ful' to 'fit' (a sudden attack), creating a word for irregular, interrupted action."
+            },
+            {
+                word: "frugal",
+                shakespeare: true,
+                firstUse: "The Merry Wives of Windsor (1597-1598)",
+                meaning: "Sparing or economical with regard to money or food; not wasteful.",
+                etymology: "Shakespeare adapted 'frugal' from Latin 'frugalis' (economical), introducing it to describe thriftiness."
+            },
+            {
+                word: "gnarled",
+                shakespeare: true,
+                firstUse: "Measure for Measure (1604)",
+                meaning: "Knobbly, rough, and twisted, especially with age (typically of trees).",
+                etymology: "Shakespeare created 'gnarled' from 'gnarl' (a knot in wood), forming an adjective for twisted, aged texture."
+            },
+            {
+                word: "hurry",
+                shakespeare: true,
+                firstUse: "The Comedy of Errors (1594)",
+                meaning: "To move or act with great haste; to rush.",
+                etymology: "Shakespeare coined this word, possibly from imitative origins, to capture the sense of rushed movement."
+            },
+            {
+                word: "impartial",
+                shakespeare: true,
+                firstUse: "Henry VI Part 2 (1590-1591)",
+                meaning: "Treating all rivals or disputants equally; fair and just.",
+                etymology: "Shakespeare formed 'impartial' by adding 'im-' to 'partial,' creating a word for unbiased judgment."
+            },
+            {
+                word: "invulnerable",
+                shakespeare: true,
+                firstUse: "Hamlet (1600-1601)",
+                meaning: "Impossible to harm or damage; immune to attack.",
+                etymology: "Shakespeare combined Latin 'in-' (not) + 'vulnerare' (to wound), creating a word for immunity from harm."
+            },
+            {
+                word: "lackluster",
+                shakespeare: true,
+                firstUse: "As You Like It (1599-1600)",
+                meaning: "Lacking in vitality, force, or conviction; uninspired or boring.",
+                etymology: "Shakespeare combined 'lack' + 'luster' to describe something dull, lifeless, or uninspiring."
+            },
+            {
+                word: "laughable",
+                shakespeare: true,
+                firstUse: "The Merchant of Venice (1596-1597)",
+                meaning: "So ludicrous as to be amusing; ridiculous.",
+                etymology: "Shakespeare added '-able' to 'laugh,' creating an adjective for things deserving mockery or amusement."
+            },
+            {
+                word: "leapfrog",
+                shakespeare: true,
+                firstUse: "Henry V (1599)",
+                meaning: "A game in which players vault over each other; to overtake or surpass.",
+                etymology: "Shakespeare combined 'leap' + 'frog' to describe both the children's game and the act of jumping ahead."
+            },
+            {
+                word: "lustrous",
+                shakespeare: true,
+                firstUse: "The Rape of Lucrece (1594)",
+                meaning: "Having a gentle sheen or soft glow; shining or glossy.",
+                etymology: "Shakespeare formed this adjective from 'luster,' creating a word for soft, glowing beauty."
+            },
+            {
+                word: "madwoman",
+                shakespeare: true,
+                firstUse: "The Comedy of Errors (1594)",
+                meaning: "A woman who is mentally ill; a woman acting in a wild or reckless manner.",
+                etymology: "Shakespeare created this compound by combining 'mad' + 'woman' to describe female insanity or wildness."
+            },
+            {
+                word: "manager",
+                shakespeare: true,
+                firstUse: "A Midsummer Night's Dream (1595-1596)",
+                meaning: "A person responsible for controlling or administering an organization or group.",
+                etymology: "Shakespeare adapted 'manager' from Italian 'maneggiare' (to handle), giving it the modern administrative sense."
+            },
+            {
+                word: "moonbeam",
+                shakespeare: true,
+                firstUse: "A Midsummer Night's Dream (1595-1596)",
+                meaning: "A ray of moonlight; a shaft of light from the moon.",
+                etymology: "Shakespeare combined 'moon' + 'beam' to create this poetic word for lunar radiance."
+            },
+            {
+                word: "negotiate",
+                shakespeare: true,
+                firstUse: "Much Ado About Nothing (1598-1599)",
+                meaning: "To try to reach an agreement through discussion and compromise.",
+                etymology: "Shakespeare introduced 'negotiate' from Latin 'negotiari' (to carry on business), establishing its modern diplomatic meaning."
+            },
+            {
+                word: "obscene",
+                shakespeare: true,
+                firstUse: "Richard II (1595)",
+                meaning: "Offensive or disgusting by accepted standards of morality and decency.",
+                etymology: "Shakespeare adapted 'obscene' from Latin 'obscenus' (repulsive), introducing it to describe moral offensiveness."
+            },
+            {
+                word: "olympian",
+                shakespeare: true,
+                firstUse: "Troilus and Cressida (1602)",
+                meaning: "Associated with Mount Olympus and the Greek gods; superior or majestic.",
+                etymology: "Shakespeare created this adjective from 'Olympus,' using it to describe godlike power and majesty."
+            },
+            {
+                word: "outbreak",
+                shakespeare: true,
+                firstUse: "Hamlet (1600-1601)",
+                meaning: "A sudden occurrence or outburst; the sudden start of something unpleasant.",
+                etymology: "Shakespeare combined 'out' + 'break' to describe a sudden eruption of disease, violence, or emotion."
+            },
+
+            // NOT coined by Shakespeare
+            {
+                word: "coffee",
+                shakespeare: false,
+                etymology: "From Turkish 'kahve' via Italian 'caffè.' First appeared in English around 1600 from Arabic 'qahwa.' The word entered English through trade routes and Ottoman Turkish influence, well-established before Shakespeare's major works."
+            },
+            {
+                word: "telephone",
+                shakespeare: false,
+                etymology: "From Greek 'tele' (far) + 'phone' (sound/voice). Coined in 1835 by François Sudre for a music communication system, and popularized by Alexander Graham Bell in 1876—long after Shakespeare's death in 1616."
+            },
+            {
+                word: "chocolate",
+                shakespeare: false,
+                etymology: "From Nahuatl (Aztec) 'chocolatl' via Spanish 'chocolate.' Entered English around 1600-1604 as Europeans encountered cacao in the Americas. While contemporary with late Shakespeare, it came from Spanish colonial sources, not his pen."
+            },
+            {
+                word: "gravity",
+                shakespeare: false,
+                etymology: "From Latin 'gravitas' (weight, heaviness). Used in English since the early 1500s in both physical and metaphorical senses. The word predates Shakespeare and was well-established in Middle English."
+            },
+            {
+                word: "democracy",
+                shakespeare: false,
+                etymology: "From Greek 'demokratia' (demos = people, kratia = rule). Entered English in the 1570s from Middle French 'démocratie.' This political term was borrowed from classical sources before Shakespeare's playwriting career."
+            },
+            {
+                word: "hurricane",
+                shakespeare: false,
+                etymology: "From Spanish 'huracán,' borrowed from Taíno (Caribbean indigenous language) 'hurakán.' First recorded in English in the 1550s as Europeans explored the Caribbean. Predates Shakespeare's works."
+            },
+            {
+                word: "algebra",
+                shakespeare: false,
+                etymology: "From Arabic 'al-jabr' (reunion of broken parts). Entered English in the 1550s through Latin translations of Arabic mathematical texts. This mathematical term was established before Shakespeare's time."
+            },
+            {
+                word: "magazine",
+                shakespeare: false,
+                etymology: "From Arabic 'makhzan' (storehouse) through Italian 'magazzino' and French 'magasin.' First used in English in the 1580s to mean storehouse. While Shakespeare was alive, this word came through Mediterranean trade languages, not his coinage."
+            },
+            {
+                word: "umbrella",
+                shakespeare: false,
+                etymology: "From Italian 'ombrella' (little shade), from Latin 'umbra' (shadow). First appeared in English in the early 1600s from Italian sources. This was a borrowed word from continental European languages, not a Shakespearean invention."
+            },
+            {
+                word: "fantastic",
+                shakespeare: false,
+                etymology: "From Medieval Latin 'fantasticus' and Greek 'phantastikos' (able to imagine). Used in English since the late 1300s, well before Shakespeare. Chaucer used 'fantastic' in his works. Shakespeare used the word but did not create it."
+            },
+            {
+                word: "computer",
+                shakespeare: false,
+                etymology: "Originally meant 'a person who computes' from Latin 'computare' (to calculate). First recorded in English in 1613, but for electronic computers, the modern usage emerged in the 1940s—over 300 years after Shakespeare's death."
+            },
+            {
+                word: "biology",
+                shakespeare: false,
+                etymology: "From Greek 'bios' (life) + 'logos' (study). Coined in German as 'Biologie' in 1800 by Karl Friedrich Burdach. The term was introduced to science nearly 200 years after Shakespeare's death."
+            },
+            {
+                word: "restaurant",
+                shakespeare: false,
+                etymology: "From French 'restaurant' (restoring), from 'restaurer' (to restore). First used in modern sense in French around 1765 when Parisian establishments offered restorative bouillons. Entered English in the 1820s, long after Shakespeare."
+            },
+            {
+                word: "genius",
+                shakespeare: false,
+                etymology: "From Latin 'genius' (guardian deity, innate quality). Used in English since the late 1300s to mean a guardian spirit. Shakespeare used the word but didn't coin it—it appears in Chaucer's works decades earlier."
+            },
+            {
+                word: "champion",
+                shakespeare: false,
+                etymology: "From Latin 'campio' (combatant in the arena) through Old French 'champion.' Entered English in the 1200s. Well-established in Middle English long before Shakespeare's birth, appearing in medieval tournaments and literature."
+            },
+            {
+                word: "anchor",
+                shakespeare: false,
+                etymology: "From Latin 'ancora' through Old English 'ancor.' Used in English since before 900 CE in nautical contexts. This ancient word was part of Old English vocabulary, predating Shakespeare by over 600 years."
+            },
+            {
+                word: "circus",
+                shakespeare: false,
+                etymology: "From Latin 'circus' (ring, circular area). Used in English since the 1380s to refer to Roman arenas. The modern entertainment meaning developed in the 1790s with traveling shows, well after Shakespeare."
+            },
+            {
+                word: "vitamin",
+                shakespeare: false,
+                etymology: "From Latin 'vita' (life) + 'amine' (a compound containing nitrogen). Coined in 1912 by Polish biochemist Casimir Funk, nearly 300 years after Shakespeare. The concept of vitamins didn't exist in the Renaissance."
+            },
+            {
+                word: "tourism",
+                shakespeare: false,
+                etymology: "From French 'tourisme,' derived from 'tour.' First recorded in English in 1811. The word emerged during the age of Grand Tours through Europe, centuries after Shakespeare's time."
+            },
+            {
+                word: "robot",
+                shakespeare: false,
+                etymology: "From Czech 'robota' (forced labor). Coined by Czech writer Karel Čapek in his 1920 play 'R.U.R.' The word was invented 304 years after Shakespeare's death to describe artificial workers."
+            },
+            {
+                word: "piano",
+                shakespeare: false,
+                etymology: "Short for 'pianoforte,' from Italian 'piano' (soft) + 'forte' (loud). Invented and named by Bartolomeo Cristofori around 1700 in Italy. The instrument and its name appeared 84 years after Shakespeare died."
+            },
+            {
+                word: "jungle",
+                shakespeare: false,
+                etymology: "From Hindi 'jangal' (desert, forest) through Sanskrit. Entered English in the 1770s through British colonial contact with India. The word came into English over 150 years after Shakespeare."
+            },
+            {
+                word: "yogurt",
+                shakespeare: false,
+                etymology: "From Turkish 'yoğurt.' Entered English in the early 1600s through contact with the Ottoman Empire, but popularized much later. While possibly contemporary with late Shakespeare, it came from Turkish cuisine, not his writings."
+            },
+            {
+                word: "kindergarten",
+                shakespeare: false,
+                etymology: "From German 'Kindergarten' (children's garden), coined by Friedrich Fröbel in 1840. This educational term was invented as part of German education reform, 224 years after Shakespeare's death."
+            },
+            {
+                word: "safari",
+                shakespeare: false,
+                etymology: "From Swahili 'safari' (journey), from Arabic 'safar' (journey, travel). Entered English in the 1850s during European exploration of East Africa, over 200 years after Shakespeare."
+            },
+            {
+                word: "pajamas",
+                shakespeare: false,
+                etymology: "From Hindi/Urdu 'pāyjāma' (leg garment), from Persian 'pāy' (leg) + 'jāma' (garment). Entered English in the early 1800s through British colonial India, nearly 200 years after Shakespeare."
+            },
+            {
+                word: "shampoo",
+                shakespeare: false,
+                etymology: "From Hindi 'cāmpo' (to press, massage), from Sanskrit. First recorded in English in 1762, referring to massage. The hair-washing meaning developed later, well after Shakespeare's era."
+            },
+            {
+                word: "mammoth",
+                shakespeare: false,
+                etymology: "From Russian 'mamot' or 'mamont.' Entered English in the early 1700s when Russian explorers found frozen specimens in Siberia. The word and knowledge of these extinct elephants came long after Shakespeare."
+            },
+            {
+                word: "zombie",
+                shakespeare: false,
+                etymology: "From West African languages via Haitian Creole 'zonbi.' Entered English in 1819 through accounts of Haitian folklore. This word came from Caribbean slave culture, centuries after Shakespeare."
+            },
+            {
+                word: "tycoon",
+                shakespeare: false,
+                etymology: "From Japanese 'taikun' (great lord), ultimately from Chinese. Entered English in 1857 after Commodore Perry's opening of Japan. This business term emerged during America's Gilded Age, long after Shakespeare."
+            },
+        ];
+
+        const shakespeareCompliments = [
+            "Thou art as wise as thou art beautiful!",
+            "Thou hast a wit as sharp as a sword!",
+            "Thy knowledge shines brighter than the sun!",
+            "Well met! Thy wisdom rivals the scholars of Athens!",
+            "Forsooth! Thou art a paragon of learning!",
+            "Thy mind is as keen as Prospero's magic!",
+            "Excellent! Thou hast the wit of Beatrice!",
+            "Marry, thou art as clever as thou art fair!",
+            "By my troth, thy intellect knows no bounds!",
+            "Huzzah! Thou art wiser than the Oracle of Delphi!",
+            "Thou art the very flower of courtesy and wit!",
+            "What a piece of work art thou! How noble in reason!",
+            "Thy wisdom doth eclipse the brightest star!",
+            "Verily, thou art more learned than all the sages combined!",
+            "By heaven, thy mind is a treasure trove!",
+            "Thou dost possess the wisdom of Solomon himself!",
+            "Well done! Thy genius knows no peer!",
+            "Methinks the gods themselves envy thy wit!",
+            "Thou art as brilliant as the midsummer sun!",
+            "Thy understanding surpasses that of the greatest minds!",
+            "Most excellent scholar! Thy knowledge astounds!",
+            "Thou art sharper than any blade forged in steel!",
+            "By my faith, thou hast the cunning of Odysseus!",
+            "What magnificence of mind! What glory of intellect!",
+            "Thou art as radiant in wisdom as Venus in beauty!",
+            "Prithee, accept my admiration for thy superior wit!",
+            "Thy brilliance rivals the very stars themselves!",
+            "Thou art a monument to learning and scholarship!",
+            "How now! Such wisdom would make angels weep with joy!",
+            "Thy mental prowess is the stuff of legends!"
+        ];
+
+        const shakespeareInsults = [
+            "Thou art as loathsome as a toad!",
+            "Thou pribbling, clay-brained canker-blossom!",
+            "Methinks thou art a general offence, and every man should beat thee!",
+            "Thou art unfit for any place but hell!",
+            "Away, you starvelling, you elf-skin, you dried neat's-tongue!",
+            "Thou art a boil, a plague sore, an embossed carbuncle!",
+            "More of your conversation would infect my brain!",
+            "Thou art as fat-witted as thou art fat-bodied!",
+            "Thine face is not worth sunburning!",
+            "Out of my sight! Thou dost infect mine eyes!",
+            "Thou art a base, proud, shallow, beggarly knave!",
+            "Villain, I have done thy mother!",
+            "Thou whoreson zed! Thou unnecessary letter!",
+            "Thine forward voice is to speak well of thine friend; thine backward voice is to utter foul speeches!",
+            "Thou art as fat as butter, thou cream-faced loon!",
+            "Would thou wert clean enough to spit upon!",
+            "Thou lump of foul deformity!",
+            "Thou sodden-witted lord! Thou hast no more brain than I have in mine elbows!",
+            "Thy sin's not accidental, but a trade!",
+            "Thou crusty batch of nature!",
+            "There's no more faith in thee than in a stewed prune!",
+            "Thou art like a toad; ugly and venomous!",
+            "Peace, ye fat guts!",
+            "Thy tongue outvenoms all the worms of Nile!",
+            "Thou art the son and heir of a mongrel!",
+            "Thine wit's as thick as Tewkesbury mustard!",
+            "Thou art a flesh-monger, a fool, and a coward!",
+            "Away, thou issue of a mangy dog!",
+            "Thou art a most notable coward, an infinite and endless liar!",
+            "Poisonous bunch-backed toad!"
+        ];
+
+        let currentIndex = 0;
+        let correctCount = 0;
+        let incorrectCount = 0;
+        let shuffledWords = [];
+        let allWords = [...words];
+        let usedWords = [];
+        const questionsPerRound = 10;
+
+        // Audio Context for sound effects
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioContext = new AudioContext();
+
+        // Embedded HUZZAH sound as base64
+        const huzzahBase64 = "SUQzAwAAAAAWD1RYWFgAAAASAAAAbWFqb3JfYnJhbmQAaXNvbQBUWFhYAAAAEwAAAG1pbm9yX3ZlcnNpb24ANTEyAFRYWFgAAAAkAAAAY29tcGF0aWJsZV9icmFuZHMAaXNvbWlzbzJhdmMxbXA0MQBUUENLAAAABQAAADEVAL0BUVRJVDIAAAAUAAAAETAXMU3vdW5kYm9hcmRzLmNvbQBUWFhYAAAAGwAAAGF1dGhvcgAxMDFzb3VuZGJvYXJkcy5jb20AVFBFMgAAABQAAAAxMDFzb3VuZGJvYXJkcy5jb20AVEFMQIAAABQAAAAXU3NvdW5kYm9hcmRzLmNvbQBUWFhYAAAAHQAAAGdyb3VwaW5nADEwMXNvdW5kYm9hcmRzLmNvbQBUQ09NAAAAFAAAADEVAXU3NvdW5kYm9hcmRzLmNvbQBUWFhYAAAAGQAAAHllYXIAMTAxc291bmRib2FyZHMuY29tAFRQRTEAAAAUAAAAMTAxc291bmRib2FyZHMuY29tAFRYWFgAAAAcAAAAY29tbWVudAAxMDFzb3VuZGJvYXJkcy5jb20AVENPUIQAAABQAAAAXU3NvdW5kYm9hcmRzLmNvbQBUQ09QAAAAFAAAADEACFXU3NvdW5kYm9hcmRzLmNvbQBUWFhYAAAAIAAAAGRlc2NyaXB0aW9uADEwMXNvdW5kYm9hcmRzLmNvbQBUWFhYAAAAHQAAAHN5bm9wc2lzADEwMXNvdW5kYm9hcmRzLmNvbQBUWFhYAAAAGQAAAHNob3cAMTAxc291bmRib2FyZHMuY29tAFRYWFgAAAAfAAAAZXBpc29kZV9pZAAxMDFzb3VuZGJvYXJkcy5jb20AVFhYWAAAABwAAABuZXR3b3JrADEwMXNvdW5kYm9hcmRzLmNvbQBUWFhYAAAAGQAAAFVTTFQAMTAxc291bmRib2FyZHMuY29tAFRTU0UAAAAPAAAATGF2ZjU4LjEyLjEwMABBUElDAAAgHwAAAGltYWdlL3BuZwADQWxidW0gY292ZXIASUNOBG0KGgoAAAANSUhEUgAAAfQAAABWCAMAAAATJO5OKAAQAZ0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAMmaVRYdFhNTDpjb20uYWRvYmUueG1wAAAAAAA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjYtYzE0MiA3OS4xNjA5MjQsIDIwMTcvMDcvMTMtMDE6MDY6MzkgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE4IChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo3MzRENkI0NTQ5MzIxMUVFQUZFNEIyRkRCQ0M5QzIwQSIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo3MzRENkI0NjQ5MzIxMUVFQUZFNEIyRkRCQ0M5QzIwQSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjczNEQ2QjQzNDkzMjExRUVBRkU0QjJGREJDQzlDMjBBIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjczNEQ2QjQ0NDkzMjExRUVBRkU0QjJGREJDQzlDMjBBIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+DVPYHgAAAAZQTFRF5e33Q0FBsn4iVQAABGVJREFUeNrsnclmlCAQRUOI//+rVnVSTWFEQAWPRT+ZMhG5iDJoiDAwMDAwMDAyfDbhIbI8PgT+++Wyu7gdzdLZljysq7asDiyiDcnb6wTDluRk/yT59b6e4c1hlDnZd3Evttls4jdov89/Qho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";
+
+        // Load the HUZZAH sound file
+        let huzzahBuffer = null;
+        
+        async function loadHuzzahSound() {
+            try {
+                // Convert base64 to array buffer
+                const binaryString = atob(huzzahBase64);
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                
+                huzzahBuffer = await audioContext.decodeAudioData(bytes.buffer);
+            } catch (error) {
+                console.log('Could not load HUZZAH sound:', error);
+            }
+        }
+        
+        // Load the sound when page loads
+        loadHuzzahSound();
+
+        // Trumpet fanfare for correct answers
+        function playTrumpetFanfare() {
+            const now = audioContext.currentTime;
+            
+            // Create oscillators for trumpet-like sound
+            for (let i = 0; i < 3; i++) {
+                const osc = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                osc.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Trumpet-like frequency sequence
+                const frequencies = [
+                    [392, 523, 659],  // G, C, E (triumphant chord)
+                    [440, 554, 698],  // A, C#, F
+                    [523, 659, 784]   // C, E, G (final triumphant)
+                ];
+                
+                osc.frequency.setValueAtTime(frequencies[i][0], now + i * 0.15);
+                osc.frequency.setValueAtTime(frequencies[i][1], now + i * 0.15 + 0.05);
+                osc.frequency.setValueAtTime(frequencies[i][2], now + i * 0.15 + 0.1);
+                
+                osc.type = 'sawtooth'; // Brass-like timbre
+                
+                gainNode.gain.setValueAtTime(0, now + i * 0.15);
+                gainNode.gain.linearRampToValueAtTime(0.2, now + i * 0.15 + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + i * 0.15 + 0.3);
+                
+                osc.start(now + i * 0.15);
+                osc.stop(now + i * 0.15 + 0.3);
+            }
+        }
+
+        // Play the uploaded HUZZAH sound
+        function playHuzzahShout() {
+            if (!huzzahBuffer) {
+                console.log('HUZZAH sound not loaded yet');
+                return;
+            }
+            
+            const source = audioContext.createBufferSource();
+            const gainNode = audioContext.createGain();
+            
+            source.buffer = huzzahBuffer;
+            source.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            gainNode.gain.setValueAtTime(0.8, audioContext.currentTime); // Set volume
+            
+            source.start(0);
+        }
+
+        // Descending "sad trombone" for wrong answers
+        function playSadTrombone() {
+            const now = audioContext.currentTime;
+            
+            const osc = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            osc.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Descending "wah wah waaah" frequencies
+            osc.frequency.setValueAtTime(200, now);
+            osc.frequency.linearRampToValueAtTime(180, now + 0.3);
+            osc.frequency.linearRampToValueAtTime(160, now + 0.6);
+            osc.frequency.linearRampToValueAtTime(100, now + 1.2);
+            
+            osc.type = 'sawtooth'; // Brass-like
+            
+            gainNode.gain.setValueAtTime(0, now);
+            gainNode.gain.linearRampToValueAtTime(0.3, now + 0.05);
+            gainNode.gain.linearRampToValueAtTime(0.25, now + 0.6);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1.3);
+            
+            osc.start(now);
+            osc.stop(now + 1.3);
+        }
+
+        // Disappointed sigh sound
+        function playDisappointedSigh() {
+            const now = audioContext.currentTime;
+            
+            // Create noise for breath-like sound
+            const noise = audioContext.createBufferSource();
+            const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.8, audioContext.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < noiseBuffer.length; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+            noise.buffer = noiseBuffer;
+            
+            const noiseGain = audioContext.createGain();
+            const noiseFilter = audioContext.createBiquadFilter();
+            
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(audioContext.destination);
+            
+            // Filter for breath-like quality
+            noiseFilter.type = 'lowpass';
+            noiseFilter.frequency.setValueAtTime(800, now);
+            noiseFilter.frequency.linearRampToValueAtTime(300, now + 0.8);
+            
+            // Sigh envelope
+            noiseGain.gain.setValueAtTime(0, now);
+            noiseGain.gain.linearRampToValueAtTime(0.15, now + 0.1);
+            noiseGain.gain.linearRampToValueAtTime(0.12, now + 0.3);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+            
+            noise.start(now);
+            noise.stop(now + 0.8);
+        }
+
+        function shuffle(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function getRandomWords(count) {
+            // Filter out already used words
+            const availableWords = allWords.filter(word => !usedWords.includes(word));
+            
+            // If we've used all words, reset the pool
+            if (availableWords.length < count) {
+                usedWords = [];
+                return shuffle(allWords).slice(0, count);
+            }
+            
+            // Get random selection
+            const selected = shuffle(availableWords).slice(0, count);
+            usedWords.push(...selected);
+            return selected;
+        }
+
+        function initQuiz() {
+            shuffledWords = getRandomWords(questionsPerRound);
+            currentIndex = 0;
+            correctCount = 0;
+            incorrectCount = 0;
+            updateScoreboard();
+            displayWord();
+        }
+
+        function displayWord() {
+            if (currentIndex >= shuffledWords.length) {
+                showFinalResults();
+                return;
+            }
+
+            const word = shuffledWords[currentIndex];
+            document.getElementById('current-word').textContent = word.word;
+            document.getElementById('word-counter').textContent = `Word ${currentIndex + 1} of ${questionsPerRound}`;
+            
+            // Show question page, hide info page
+            document.getElementById('quiz-page').style.display = 'block';
+            document.getElementById('info-page').style.display = 'none';
+            
+            // Re-enable buttons
+            const buttons = document.querySelectorAll('.category-btn');
+            buttons.forEach(btn => btn.disabled = false);
+        }
+
+        function checkAnswer(userAnswer) {
+            // Resume audio context on first user interaction (required by some browsers)
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            const word = shuffledWords[currentIndex];
+            const correct = userAnswer === word.shakespeare;
+            
+            // Disable buttons after answer
+            const buttons = document.querySelectorAll('.category-btn');
+            buttons.forEach(btn => btn.disabled = true);
+
+            // Store the result for the flash screen
+            window.lastAnswerCorrect = correct;
+            window.lastAnswerWord = word;
+
+            // Show flash overlay
+            showFlashScreen(correct);
+        }
+
+        function showFlashScreen(correct) {
+            const flashOverlay = document.getElementById('flash-overlay');
+            const flashContent = document.getElementById('flash-content');
+            const flashResult = document.getElementById('flash-result');
+            const flashQuote = document.getElementById('flash-quote');
+            
+            if (correct) {
+                const compliment = shakespeareCompliments[Math.floor(Math.random() * shakespeareCompliments.length)];
+                flashContent.className = 'flash-content correct';
+                flashResult.textContent = '✓ Correct!';
+                flashQuote.textContent = `"${compliment}"`;
+                correctCount++;
+                
+                // Sound effects disabled for now
+                // playTrumpetFanfare();
+                // setTimeout(() => playHuzzahShout(), 450);
+            } else {
+                const insult = shakespeareInsults[Math.floor(Math.random() * shakespeareInsults.length)];
+                flashContent.className = 'flash-content incorrect';
+                flashResult.textContent = '✗ Incorrect!';
+                flashQuote.textContent = `"${insult}"`;
+                incorrectCount++;
+                
+                // Sound effects disabled for now
+                // playSadTrombone();
+                // setTimeout(() => playDisappointedSigh(), 600);
+            }
+            
+            flashOverlay.classList.add('show');
+            updateScoreboard();
+            
+            // After 2.5 seconds, hide flash and show info page
+            setTimeout(() => {
+                flashOverlay.classList.remove('show');
+                showInfoPage();
+            }, 2500);
+        }
+
+        function showInfoPage() {
+            const word = window.lastAnswerWord;
+            const correct = window.lastAnswerCorrect;
+            
+            // Hide question page, show info page
+            document.getElementById('quiz-page').style.display = 'none';
+            document.getElementById('info-page').style.display = 'block';
+            
+            const feedbackDiv = document.getElementById('feedback');
+            feedbackDiv.className = 'feedback ' + (correct ? 'correct' : 'incorrect');
+            feedbackDiv.style.display = 'block';
+            
+            let feedbackHTML = '';
+
+            if (correct) {
+                feedbackHTML = `
+                    <div class="feedback-title">✓ Correct!</div>
+                `;
+
+                if (word.shakespeare) {
+                    feedbackHTML += `
+                        <div class="first-use">
+                            <strong>First Use:</strong> ${word.firstUse}
+                        </div>
+                        <div class="etymology">
+                            <strong>Meaning:</strong> ${word.meaning}
+                        </div>
+                        <div class="etymology">
+                            <strong>Etymology:</strong> ${word.etymology}
+                        </div>
+                    `;
+                } else {
+                    feedbackHTML += `
+                        <div class="etymology">
+                            <strong>Why it's not Shakespeare:</strong> ${word.etymology}
+                        </div>
+                    `;
+                }
+            } else {
+                feedbackHTML = `
+                    <div class="feedback-title">✗ Incorrect!</div>
+                `;
+
+                if (word.shakespeare) {
+                    feedbackHTML += `
+                        <div class="etymology">
+                            <strong>Why you're wrong:</strong> This word WAS coined by Shakespeare! It first appeared in <em>${word.firstUse}</em>.
+                        </div>
+                        <div class="etymology">
+                            <strong>Meaning:</strong> ${word.meaning}
+                        </div>
+                        <div class="etymology">
+                            <strong>Etymology:</strong> ${word.etymology}
+                        </div>
+                    `;
+                } else {
+                    feedbackHTML += `
+                        <div class="etymology">
+                            <strong>Why you're wrong:</strong> This word was NOT coined by Shakespeare.
+                        </div>
+                        <div class="etymology">
+                            <strong>Actual Etymology:</strong> ${word.etymology}
+                        </div>
+                    `;
+                }
+            }
+
+            feedbackDiv.innerHTML = feedbackHTML;
+            document.getElementById('next-btn').style.display = 'block';
+        }
+
+        function updateScoreboard() {
+            document.getElementById('correct-score').textContent = correctCount;
+            document.getElementById('incorrect-score').textContent = incorrectCount;
+            document.getElementById('progress-score').textContent = `${currentIndex}/${questionsPerRound}`;
+        }
+
+        function goToNextWord() {
+            currentIndex++;
+            displayWord();
+        }
+
+        function showFinalResults() {
+            document.getElementById('quiz-area').style.display = 'none';
+            document.getElementById('final-results').style.display = 'block';
+            
+            const percentage = Math.round((correctCount / shuffledWords.length) * 100);
+            document.getElementById('final-score').textContent = `${correctCount} / ${shuffledWords.length} (${percentage}%)`;
+            
+            let message = '';
+            if (percentage >= 90) {
+                message = '"Thou art a scholar fit for the Globe Theatre itself!"';
+            } else if (percentage >= 75) {
+                message = '"Well done! Thy knowledge of the Bard is most admirable!"';
+            } else if (percentage >= 60) {
+                message = '"A fair showing! Continue thy studies of Shakespeare\'s words!"';
+            } else {
+                message = '"Fear not! Even the groundlings must start somewhere. Study more and return!"';
+            }
+            
+            document.getElementById('final-message').textContent = message;
+        }
+
+        function continueQuiz() {
+            document.getElementById('quiz-area').style.display = 'block';
+            document.getElementById('final-results').style.display = 'none';
+            
+            // Start a new round with 10 more random words
+            shuffledWords = getRandomWords(questionsPerRound);
+            currentIndex = 0;
+            correctCount = 0;
+            incorrectCount = 0;
+            updateScoreboard();
+            displayWord();
+        }
+
+        function restartQuiz() {
+            document.getElementById('quiz-area').style.display = 'block';
+            document.getElementById('final-results').style.display = 'none';
+            
+            // Fully restart - reset used words and scores
+            usedWords = [];
+            initQuiz();
+        }
+
+        // Initialize quiz on page load
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
